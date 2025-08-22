@@ -1,0 +1,46 @@
+{
+  "name": "el-professor-cli",
+  "version": "0.0.1",
+  "description": "ElProfessor CLI with Google GenAI and MCP integration",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "ts-node src/index.ts",
+    "test": "jest",
+    "lint": "eslint src/**/*.ts",
+    "clean": "rimraf dist"
+  },
+  "keywords": [
+    "cli",
+    "agent",
+    "genai",
+    "mcp",
+    "gemini",
+    "aws"
+  ],
+  "author": {
+    "name": "Pierre Hanne",
+    "email": "pierre.hanne@icloud.com",
+    "url": "https://github.com/pierrehanne"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@google/genai": "1.15.0",
+    "@modelcontextprotocol/sdk": "1.17.3",
+    "dotenv": "^17.2.1"
+  },
+  "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "@types/mocha": "^10.0.1",
+    "@types/node": "^24.3.0",
+    "@typescript-eslint/eslint-plugin": "^8.40.0",
+    "@typescript-eslint/parser": "^8.40.0",
+    "eslint": "^9.33.0",
+    "jest": "^30.0.5",
+    "rimraf": "^6.0.1",
+    "ts-jest": "29.4.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.2"
+  }
+}
