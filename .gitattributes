@@ -1,0 +1,3 @@
+# Include TypeScript as detectable languages
+*.ts linguist-detectable=true
+*.js linguist-detectable=false
