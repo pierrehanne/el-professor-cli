@@ -1,6 +1,7 @@
-import { MCPManager } from '../../mcp/MCPManager';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
+
+import { MCPManager } from '../../mcp/MCPManager';
 
 jest.mock('@modelcontextprotocol/sdk/client/index.js');
 jest.mock('@modelcontextprotocol/sdk/client/stdio.js');
@@ -46,8 +47,8 @@ describe('MCPManager', () => {
   describe('initializeServers', () => {
     it('should initialize multiple servers successfully', async () => {
       const configs = [
-        { name: 'server1', command: 'cmd1', args: [], env: {} },
-        { name: 'server2', command: 'cmd2', args: [], env: {} }
+        { name: 'server1', command: 'cmd1', args: [], env: {}, disabled: false, autoApprove: [] },
+        { name: 'server2', command: 'cmd2', args: [], env: {}, disabled: false, autoApprove: [] },
       ];
 
       await manager.initializeServers(configs);
@@ -60,7 +61,9 @@ describe('MCPManager', () => {
     });
 
     it('should handle initialization failures gracefully', async () => {
-      const configs = [{ name: 'server1', command: 'cmd1', args: [], env: {} }];
+      const configs = [
+        { name: 'server1', command: 'cmd1', args: [], env: {}, disabled: false, autoApprove: [] },
+      ];
       mockClient.connect.mockRejectedValue(new Error('Connection failed'));
 
       await manager.initializeServers(configs);
@@ -78,7 +81,14 @@ describe('MCPManager', () => {
     beforeEach(async () => {
       // Ensure initializeServers resolves using our mocked client/transport
       await manager.initializeServers([
-        { name: 'test-server', command: 'cmd', args: [], env: {} }
+        {
+          name: 'test-server',
+          command: 'cmd',
+          args: [],
+          env: {},
+          disabled: false,
+          autoApprove: [],
+        },
       ]);
     });
 
@@ -107,8 +117,8 @@ describe('MCPManager', () => {
   describe('closeAll', () => {
     beforeEach(async () => {
       await manager.initializeServers([
-        { name: 'server1', command: 'cmd1', args: [], env: {} },
-        { name: 'server2', command: 'cmd2', args: [], env: {} }
+        { name: 'server1', command: 'cmd1', args: [], env: {}, disabled: false, autoApprove: [] },
+        { name: 'server2', command: 'cmd2', args: [], env: {}, disabled: false, autoApprove: [] },
       ]);
     });
 
