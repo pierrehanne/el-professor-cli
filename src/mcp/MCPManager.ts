@@ -1,9 +1,9 @@
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
+
 import { MCPServerConfig } from '../types';
 
 export class MCPManager {
-
   /** Map of server name → MCP client instance */
   private clients: Map<string, Client> = new Map();
 
@@ -37,19 +37,19 @@ export class MCPManager {
       const transport = new StdioClientTransport({
         command: config.command,
         args: config.args,
-        env: config.env
+        env: config.env,
       });
 
       const client = new Client({
         name: `el-professor-cli-${config.name}`,
-        version: '0.0.1'
+        version: '0.0.1',
       });
 
       await client.connect(transport);
-      
+
       this.clients.set(config.name, client);
       this.transports.set(config.name, transport);
-      
+
       console.log(`✓ Initialized MCP server: ${config.name}`);
     } catch (error) {
       console.error(`✗ Failed to initialize MCP server ${config.name}:`, error);
@@ -85,10 +85,10 @@ export class MCPManager {
    * - After completion, both `clients` and `transports` maps are cleared.
    */
   public async closeAll(): Promise<void> {
-    const closePromises = Array.from(this.clients.values()).map(client => 
+    const closePromises = Array.from(this.clients.values()).map(client =>
       client.close().catch(error => console.error('Error closing MCP client:', error))
     );
-    
+
     await Promise.all(closePromises);
     this.clients.clear();
     this.transports.clear();

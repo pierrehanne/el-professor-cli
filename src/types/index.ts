@@ -5,9 +5,11 @@ export interface MCPServerConfig {
   name: string;
   command: string;
   args: string[];
-  env?: Record<string, string>;
-  disabled?: boolean;
-  autoApprove?: string[];
+  env: Record<string, string>;
+  disabled: boolean;
+  autoApprove: string[];
+  type?: string;
+  timeout?: number;
 }
 
 /**
@@ -33,7 +35,7 @@ export interface ChatMessage {
  */
 export interface AgentResponse {
   text: string;
-  functionCalls?: any[];
+  functionCalls?: unknown[];
   metadata?: {
     model: string;
     timestamp: Date;

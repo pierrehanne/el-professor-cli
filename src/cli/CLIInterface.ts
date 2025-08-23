@@ -1,5 +1,7 @@
 import * as readline from 'readline';
+
 import { ElProfessor } from '../agent/ElProfessor';
+import { AgentResponse } from '../types/index';
 
 /**
  * CLIInterface
@@ -10,7 +12,6 @@ import { ElProfessor } from '../agent/ElProfessor';
  * - Supports streaming responses and maintains access to conversation history
  */
 export class CLIInterface {
-  
   /** The ElProfessor that performs LLM calls and MCP orchestration. */
   private agent: ElProfessor;
 
@@ -25,7 +26,7 @@ export class CLIInterface {
     this.agent = new ElProfessor();
     this.rl = readline.createInterface({
       input: process.stdin,
-      output: process.stdout
+      output: process.stdout,
     });
   }
 
@@ -67,9 +68,11 @@ export class CLIInterface {
    * Each input is dispatched to handleInput, after which the loop continues.
    */
   private startInteractiveSession(): void {
-    this.rl.question('> ', async (input) => {
-      await this.handleInput(input.trim());
-      this.startInteractiveSession();
+    this.rl.question('> ', (input: string) => {
+      void (async (): Promise<void> => {
+        await this.handleInput(input.trim());
+        this.startInteractiveSession();
+      })();
     });
   }
 
@@ -119,7 +122,7 @@ export class CLIInterface {
     const content = args.join(' ');
 
     switch (cmd) {
-      case '/terraform':
+      case '/terraform': {
         if (!content) {
           console.log('Usage: /terraform <description>');
           return;
@@ -128,8 +131,9 @@ export class CLIInterface {
         const terraformResponse = await this.agent.generateTerraform(content);
         this.printResponse(terraformResponse);
         break;
+      }
 
-      case '/cdk':
+      case '/cdk': {
         if (!content) {
           console.log('Usage: /cdk <description>');
           return;
@@ -138,8 +142,9 @@ export class CLIInterface {
         const cdkResponse = await this.agent.generateCDK(content);
         this.printResponse(cdkResponse);
         break;
+      }
 
-      case '/diagram':
+      case '/diagram': {
         if (!content) {
           console.log('Usage: /diagram <description>');
           return;
@@ -148,8 +153,9 @@ export class CLIInterface {
         const diagramResponse = await this.agent.createArchitectureDiagram(content);
         this.printResponse(diagramResponse);
         break;
+      }
 
-      case '/docs':
+      case '/docs': {
         if (!content) {
           console.log('Usage: /docs <code or description>');
           return;
@@ -158,8 +164,9 @@ export class CLIInterface {
         const docsResponse = await this.agent.generateDocumentation(content);
         this.printResponse(docsResponse);
         break;
+      }
 
-      case '/stream':
+      case '/stream': {
         if (!content) {
           console.log('Usage: /stream <message>');
           return;
@@ -171,6 +178,7 @@ export class CLIInterface {
         }
         console.log('\n');
         break;
+      }
 
       case '/history':
         this.showHistory();
@@ -184,6 +192,7 @@ export class CLIInterface {
       case '/exit':
         await this.shutdown();
         process.exit(0);
+        break; // satisfy linter (unreachable but required to avoid fallthrough warning)
 
       default:
         console.log('❓ Unknown command. Type a question or use available commands.');
@@ -209,7 +218,7 @@ export class CLIInterface {
    *
    * @param response - The AgentResponse or compatible object
    */
-  private printResponse(response: any): void {
+  private printResponse(response: AgentResponse): void {
     console.log('\n📋 Response:');
     console.log(response.text);
 
@@ -234,7 +243,9 @@ export class CLIInterface {
     history.forEach((msg, index) => {
       const timestamp = msg.timestamp.toLocaleTimeString();
       const role = msg.role === 'user' ? '👤' : '🤖';
-      console.log(`${index + 1}. [${timestamp}] ${role} ${msg.content.substring(0, 100)}${msg.content.length > 100 ? '...' : ''}`);
+      console.log(
+        `${index + 1}. [${timestamp}] ${role} ${msg.content.substring(0, 100)}${msg.content.length > 100 ? '...' : ''}`
+      );
     });
     console.log('');
   }

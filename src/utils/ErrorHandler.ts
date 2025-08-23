@@ -2,15 +2,14 @@ import { Logger } from './Logger';
 
 /**
  * Base error class for all ElProfessor errors.
- * 
+ *
  * Provides additional context such as an error code and HTTP status code
  * to allow for more structured error handling.
  */
 export class ElProfessorError extends Error {
-  
   /** Unique error code identifier. */
   public readonly code: string;
-  
+
   /** Associated HTTP status code for the error. */
   public readonly statusCode: number;
 
@@ -64,14 +63,13 @@ export class GenAIError extends ElProfessorError {
 
 /**
  * Centralized error handler utility for logging and managing errors.
- * 
+ *
  * Supports:
  * - Logging structured error messages with context.
  * - Wrapping sync/async operations to catch and log errors automatically.
  * - Identifying retryable errors for resiliency.
  */
 export class ErrorHandler {
-  
   private static logger = Logger.getInstance();
 
   /**
@@ -82,16 +80,16 @@ export class ErrorHandler {
    */
   public static handle(error: Error | ElProfessorError, context?: string): void {
     const contextMessage = context ? ` in ${context}` : '';
-    
+
     if (error instanceof ElProfessorError) {
       this.logger.error(`${error.name}${contextMessage}: ${error.message}`, {
         code: error.code,
         statusCode: error.statusCode,
-        stack: error.stack
+        stack: error.stack,
       });
     } else {
       this.logger.error(`Unexpected error${contextMessage}: ${error.message}`, {
-        stack: error.stack
+        stack: error.stack,
       });
     }
   }
@@ -124,10 +122,7 @@ export class ErrorHandler {
    * @param context - Optional context string for logging.
    * @returns The result of the operation, or `null` if it fails.
    */
-  public static wrap<T>(
-    operation: () => T,
-    context?: string
-  ): T | null {
+  public static wrap<T>(operation: () => T, context?: string): T | null {
     try {
       return operation();
     } catch (error) {
@@ -138,7 +133,7 @@ export class ErrorHandler {
 
   /**
    * Determines if an error is retryable.
-   * 
+   *
    * Retryable errors include:
    * - `MCPConnectionError`
    * - `GenAIError` containing rate limit, timeout, or service unavailable messages
@@ -150,13 +145,15 @@ export class ErrorHandler {
     if (error instanceof MCPConnectionError) {
       return true;
     }
-    
+
     if (error instanceof GenAIError) {
-      return error.message.includes('rate limit') || 
-             error.message.includes('timeout') ||
-             error.message.includes('service unavailable');
+      return (
+        error.message.includes('rate limit') ||
+        error.message.includes('timeout') ||
+        error.message.includes('service unavailable')
+      );
     }
-    
+
     return false;
   }
 }

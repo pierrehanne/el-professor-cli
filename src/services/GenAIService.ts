@@ -1,7 +1,8 @@
 import { GoogleGenAI, FunctionCallingConfigMode, mcpToTool } from '@google/genai';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
-import { AgentResponse } from '../types';
+
 import { ConfigManager } from '../config/ConfigManager';
+import { AgentResponse } from '../types';
 
 /**
  * GenAIService
@@ -17,7 +18,6 @@ import { ConfigManager } from '../config/ConfigManager';
  *  - Normalize outputs into AgentResponse
  */
 export class GenAIService {
-
   /** Underlying Google GenAI client instance. */
   private ai: GoogleGenAI;
 
@@ -32,7 +32,7 @@ export class GenAIService {
   constructor() {
     this.config = ConfigManager.getInstance();
     this.ai = new GoogleGenAI({
-      apiKey: this.config.getGeminiApiKey()
+      apiKey: this.config.getGeminiApiKey(),
     });
   }
 
@@ -51,36 +51,35 @@ export class GenAIService {
    * @throws Error when the underlying call fails — the error message will include
    *         the original thrown error.
    */
-  public async generateContent(
-    prompt: string,
-    mcpClients?: Client[]
-  ): Promise<AgentResponse> {
+  public async generateContent(prompt: string, mcpClients?: Client[]): Promise<AgentResponse> {
     try {
-
       // Convert any MCP clients into "tools" expected by the GenAI SDK.
-      const tools = mcpClients?.map(client => mcpToTool(client)) || [];
+      const tools = mcpClients?.map(client => mcpToTool(client)) ?? [];
 
       // Build request payload. Include tools/config only if present.
       const response = await this.ai.models.generateContent({
         model: this.config.getModel(),
         contents: prompt,
-        config: tools.length > 0 ? {
-          tools,
-          toolConfig: {
-            functionCallingConfig: {
-              mode: FunctionCallingConfigMode.AUTO
-            }
-          }
-        } : undefined
+        config:
+          tools.length > 0
+            ? {
+                tools,
+                toolConfig: {
+                  functionCallingConfig: {
+                    mode: FunctionCallingConfigMode.AUTO,
+                  },
+                },
+              }
+            : undefined,
       });
 
       return {
-        text: response.text || '',
+        text: response.text ?? '',
         functionCalls: response.functionCalls,
         metadata: {
           model: this.config.getModel(),
-          timestamp: new Date()
-        }
+          timestamp: new Date(),
+        },
       };
     } catch (error) {
       // Surface useful console output for debugging and rethrow a clearer message.
@@ -114,20 +113,22 @@ export class GenAIService {
     mcpClients?: Client[]
   ): Promise<AsyncIterable<string>> {
     try {
-
-      const tools = mcpClients?.map(client => mcpToTool(client)) || [];
+      const tools = mcpClients?.map(client => mcpToTool(client)) ?? [];
 
       const response = await this.ai.models.generateContentStream({
         model: this.config.getModel(),
         contents: prompt,
-        config: tools.length > 0 ? {
-          tools,
-          toolConfig: {
-            functionCallingConfig: {
-              mode: FunctionCallingConfigMode.AUTO
-            }
-          }
-        } : undefined
+        config:
+          tools.length > 0
+            ? {
+                tools,
+                toolConfig: {
+                  functionCallingConfig: {
+                    mode: FunctionCallingConfigMode.AUTO,
+                  },
+                },
+              }
+            : undefined,
       });
 
       return this.createStreamIterable(response);
@@ -146,7 +147,8 @@ export class GenAIService {
    * @param response - The streaming response returned by the GenAI SDK.
    * @returns AsyncIterable<string> that yields chunk.text for each chunk.
    */
-  private async* createStreamIterable(response: any): AsyncIterable<string> {
+  /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+  private async *createStreamIterable(response: any): AsyncIterable<string> {
     for await (const chunk of response) {
       if (chunk.text) {
         yield chunk.text;

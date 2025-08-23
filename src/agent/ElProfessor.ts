@@ -1,6 +1,6 @@
-import { GenAIService } from '../services/GenAIService';
-import { MCPManager } from '../mcp/MCPManager';
 import { ConfigManager } from '../config/ConfigManager';
+import { MCPManager } from '../mcp/MCPManager';
+import { GenAIService } from '../services/GenAIService';
 import { AgentResponse, ChatMessage } from '../types';
 
 /**
@@ -16,7 +16,6 @@ import { AgentResponse, ChatMessage } from '../types';
  *  - Provide convenience methods for AWS-specific tasks like Terraform/CDK generation.
  */
 export class ElProfessor {
-
   /** Service used to request content from the LLM. */
   private genAIService: GenAIService;
 
@@ -59,7 +58,10 @@ export class ElProfessor {
     await this.mcpManager.initializeServers(mcpServers);
 
     const connectedServers = this.mcpManager.getConnectedServers();
-    console.log(`✓ ElProfessor CLI initialized with ${connectedServers.length} MCP servers:`, connectedServers);
+    console.log(
+      `✓ ElProfessor CLI initialized with ${connectedServers.length} MCP servers:`,
+      connectedServers
+    );
   }
 
   /**
@@ -92,14 +94,6 @@ export class ElProfessor {
    *
    * @param message - User input string
    * @returns Promise<AsyncIterable<string>> - async iterable of text chunks
-   *
-   * Example consumption:
-   * ```ts
-   * const stream = await agent.chatStream("Write a short explanation of VPCs");
-   * for await (const chunk of stream) {
-   *   process.stdout.write(chunk);
-   * }
-   * ```
    */
   public async chatStream(message: string): Promise<AsyncIterable<string>> {
     this.addToHistory('user', message);
@@ -111,14 +105,14 @@ export class ElProfessor {
     const self = this;
 
     return {
-      async *[Symbol.asyncIterator]() {
+      async *[Symbol.asyncIterator](): AsyncGenerator<string, void, unknown> {
         for await (const chunk of stream) {
           fullResponse += chunk;
           yield chunk;
         }
         // After stream completes, add the concatenated assistant response to history
         self.addToHistory('assistant', fullResponse);
-      }
+      },
     };
   }
 
@@ -151,7 +145,10 @@ export class ElProfessor {
    * @param language - Target language for CDK (default: 'typescript')
    * @returns Promise<AgentResponse>
    */
-  public async generateCDK(description: string, language: string = 'typescript'): Promise<AgentResponse> {
+  public async generateCDK(
+    description: string,
+    language: string = 'typescript'
+  ): Promise<AgentResponse> {
     const cdkPrompt = `Generate AWS CDK code in ${language} for: ${description}. Please provide complete, production-ready CDK code with proper constructs, stacks, and best practices.`;
     return this.chat(cdkPrompt);
   }
@@ -189,7 +186,7 @@ export class ElProfessor {
     this.conversationHistory.push({
       role,
       content,
-      timestamp: new Date()
+      timestamp: new Date(),
     });
 
     // Keep last 20 messages to prevent memory issues
@@ -235,5 +232,4 @@ export class ElProfessor {
     await this.mcpManager.closeAll();
     console.log('✓ ElProfessor CLI shut down complete');
   }
-  
 }

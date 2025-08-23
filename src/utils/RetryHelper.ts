@@ -1,5 +1,5 @@
-import { Logger } from './Logger';
 import { ErrorHandler } from './ErrorHandler';
+import { Logger } from './Logger';
 
 /**
  * Options controlling retry behavior for operations.
@@ -49,7 +49,7 @@ export class RetryHelper {
       maxDelay: 10000,
       exponentialBase: 2,
       jitter: true,
-      ...options
+      ...options,
     };
 
     let lastError: Error | null = null;
@@ -59,7 +59,7 @@ export class RetryHelper {
         return await operation();
       } catch (error) {
         lastError = error as Error;
-        
+
         if (attempt === config.maxAttempts) {
           break;
         }
@@ -79,7 +79,7 @@ export class RetryHelper {
       }
     }
 
-    throw lastError || new Error('Max retry attempts exceeded');
+    throw lastError ?? new Error('Max retry attempts exceeded');
   }
 
   /**
